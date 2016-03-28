@@ -130,6 +130,7 @@ var HexGrid = Class.create( {
 			directions : [1,1,1,1,1,1],
 			includeCrea : true,
 			stopOnCreature : true,
+			minDistance: 0,
 			distance : 0,
 			sourceCreature : undefined,
 		};
@@ -178,7 +179,7 @@ var HexGrid = Class.create( {
 						break;
 				}
 
-				if( o.distance > 0 ) dir = dir.slice(0, o.distance+1);
+				if( o.distance > 0 ) dir = dir.slice(o.minDistance, o.distance+1);
 
 				dir.each(function() {
 					this.direction = (o.flipped)?5-i:i;

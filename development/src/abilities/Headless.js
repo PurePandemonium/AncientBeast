@@ -108,24 +108,30 @@ G.abilities[39] =[
 
 
 
-// 	Third Ability: Whip Slash
+// 	Third Ability: Whip Move
 {
 	//	Type : Can be "onQuery","onStartPhase","onDamage"
 	trigger : "onQuery",
 
 	directions : [0,1,0,0,1,0],
+	minRange: 3,
+	range: 6,
 
 	require : function(){
 		if( !this.testRequirements() ) return false;
 
 		var crea = this.creature;
+		
 		var x = (crea.player.flipped) ? crea.x-crea.size+1 : crea.x ;
 
 		var test = this.testDirection({
-			team : "ennemy",
+			team : "both",
+			flipped : crea.player.flipped,
 			x : x,
 			directions : this.directions,
-			distance : 5
+			minDistance : this.minRange,
+			distance : this.range,
+			sourceCreature : this.creature,
 		});
 
 		if( !test ){
@@ -139,43 +145,54 @@ G.abilities[39] =[
 	query : function(){
 		var ability = this;
 		var crea = this.creature;
+		
+		if(this.isUpgraded()) this.range = 8;
 
 		G.grid.queryDirection({
 			fnOnConfirm : function(){ ability.animation.apply(ability,arguments); },
-			team : 0, //enemies
+			team : 3,  // Both
 			id : crea.id,
 			requireCreature : true,
 			sourceCreature : crea,
+			flipped: crea.player.flipped,
 			x : crea.x,
 			y : crea.y,
 			directions : this.directions,
-			distance : 5
+			minDistance : this.minRange,
+			distance : this.range
 		});
 	},
 
 
 	//	activate() :
 	activate : function(path,args) {
+		// new ability
+		var ability = this;
+		ability.end();
+
+		var target = path.last().creature;
+		path = path.filter( function(){	return !this.creature; }); //remove creatures
+		console.log(path);
+		
+		var creatureHexes = (args.direction==4) ? crea.hexagons[crea.size-1] : crea.hexagons[0] ;
+		path.filterCreature(false,false);
+		path.unshift(creatureHexes); //prevent error on empty path
+		
+		
+		// depends on target size
+		var destination = path.last(); 
+		
+		/*
 		var ability = this;
 		var crea = this.creature;
-
-
 		var path = path;
 		var target = path.last().creature;
 		path = path.filter( function(){	return !this.creature; }); //remove creatures
 		ability.end();
-
+		
 		console.log(path);
-
-		//Damage
-		var damage = new Damage(
-			ability.creature, //Attacker
-			"target", //Attack Type
-			{ slash : 12, crush : 5*path.length }, //Damage Type
-			1, //Area
-			[]	//Effects
-		);
-
+		
+		
 		//Movement
 		var creature = (args.direction==4) ? crea.hexagons[crea.size-1] : crea.hexagons[0] ;
 		path.filterCreature(false,false);
@@ -183,15 +200,11 @@ G.abilities[39] =[
 		var destination = path.last();
 		var x = (args.direction==4) ? destination.x+crea.size-1 : destination.x ;
 		destination = G.grid.hexs[destination.y][x];
-
+		
 		crea.moveTo(destination,{
 			ignoreMovementPoint : true,
 			ignorePath : true,
 			callback : function(){
-				var ret = target.takeDamage(damage,true);
-
-				if( ret.damageObj instanceof Damage )
-					G.triggersFn.onDamage(target,ret.damageObj);
 
 				var interval = setInterval(function(){
 					if(!G.freezedInput){
@@ -200,7 +213,8 @@ G.abilities[39] =[
 					}
 				},100);
 			},
-		});
+		}); 
+		*/
 	},
 },
 
